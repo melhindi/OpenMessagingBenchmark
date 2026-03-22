@@ -30,8 +30,8 @@ resource "random_id" "hash" {
 }
 
 variable "key_name" {
-  default     = "pulsar-benchmark-key"
-  description = "Desired name prefix for the AWS key pair"
+  default     = "melhindi_aws_us-east"
+  description = "AWS key pair"
 }
 
 variable "region" {}
@@ -128,13 +128,18 @@ resource "aws_security_group" "benchmark_security_group" {
 }
 
 resource "aws_key_pair" "auth" {
-  key_name   = "${var.key_name}-${random_id.hash.hex}"
+  key_name   = "${var.key_name}"
   public_key = file(var.public_key_path)
 }
+
+#data "aws_key_pair" "auth" {
+#  key_name   = "${var.key_name}"
+#}
 
 resource "aws_instance" "zookeeper" {
   ami           = var.ami
   instance_type = var.instance_types["zookeeper"]
+  #key_name      = data.aws_key_pair.auth.key_name
   key_name      = aws_key_pair.auth.id
   subnet_id     = aws_subnet.benchmark_subnet.id
   vpc_security_group_ids = [
@@ -158,6 +163,7 @@ resource "aws_instance" "zookeeper" {
 resource "aws_instance" "pulsar" {
   ami           = var.ami
   instance_type = var.instance_types["pulsar"]
+  #key_name      = data.aws_key_pair.auth.key_name
   key_name      = aws_key_pair.auth.id
   subnet_id     = aws_subnet.benchmark_subnet.id
   vpc_security_group_ids = [
@@ -181,6 +187,7 @@ resource "aws_instance" "pulsar" {
 resource "aws_instance" "client" {
   ami           = var.ami
   instance_type = var.instance_types["client"]
+  #key_name      = data.aws_key_pair.auth.key_name
   key_name      = aws_key_pair.auth.id
   subnet_id     = aws_subnet.benchmark_subnet.id
   vpc_security_group_ids = [
@@ -204,6 +211,7 @@ resource "aws_instance" "client" {
 resource "aws_instance" "prometheus" {
   ami           = var.ami
   instance_type = var.instance_types["prometheus"]
+  #key_name      = data.aws_key_pair.auth.key_name
   key_name      = aws_key_pair.auth.id
   subnet_id     = aws_subnet.benchmark_subnet.id
   vpc_security_group_ids = [
